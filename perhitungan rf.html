@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Forest - Simulasi Excel</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .excel-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        .excel-table th, .excel-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .excel-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .excel-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .formula-box {
+            background-color: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .step {
+            background-color: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .tree-result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .final-result {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌲 Perhitungan Random Forest - Simulasi Excel</h1>
+        
+        <h2>1. Dataset Original</h2>
+        <p>Contoh dataset untuk prediksi "Bermain Tenis" berdasarkan kondisi cuaca:</p>
+        <table class="excel-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cuaca</th>
+                    <th>Suhu</th>
+                    <th>Kelembaban</th>
+                    <th>Angin</th>
+                    <th>Bermain Tenis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>Cerah</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Tidak</td></tr>
+                <tr><td>2</td><td>Cerah</td><td>Panas</td><td>Tinggi</td><td>Kuat</td><td>Tidak</td></tr>
+                <tr><td>3</td><td>Berawan</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>4</td><td>Hujan</td><td>Sedang</td><td>Tinggi</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>5</td><td>Hujan</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>6</td><td>Hujan</td><td>Dingin</td><td>Normal</td><td>Kuat</td><td>Tidak</td></tr>
+                <tr><td>7</td><td>Berawan</td><td>Dingin</td><td>Normal</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>8</td><td>Cerah</td><td>Sedang</td><td>Tinggi</td><td>Lemah</td><td>Tidak</td></tr>
+                <tr><td>9</td><td>Cerah</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>10</td><td>Hujan</td><td>Sedang</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>11</td><td>Cerah</td><td>Sedang</td><td>Normal</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>12</td><td>Berawan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>13</td><td>Berawan</td><td>Panas</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>14</td><td>Hujan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Tidak</td></tr>
+            </tbody>
+        </table>
+
+        <h2>2. Bootstrap Sampling (Bagging)</h2>
+        <div class="step">
+            <strong>Langkah 1:</strong> Buat 3 bootstrap sample dari dataset original dengan replacement
+        </div>
+
+        <h3>Bootstrap Sample 1</h3>
+        <table class="excel-table">
+            <thead>
+                <tr><th>ID</th><th>Cuaca</th><th>Suhu</th><th>Kelembaban</th><th>Angin</th><th>Bermain Tenis</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>Cerah</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Tidak</td></tr>
+                <tr><td>5</td><td>Hujan</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>9</td><td>Cerah</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>3</td><td>Berawan</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>12</td><td>Berawan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>7</td><td>Berawan</td><td>Dingin</td><td>Normal</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>14</td><td>Hujan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Tidak</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Bootstrap Sample 2</h3>
+        <table class="excel-table">
+            <thead>
+                <tr><th>ID</th><th>Cuaca</th><th>Suhu</th><th>Kelembaban</th><th>Angin</th><th>Bermain Tenis</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>2</td><td>Cerah</td><td>Panas</td><td>Tinggi</td><td>Kuat</td><td>Tidak</td></tr>
+                <tr><td>4</td><td>Hujan</td><td>Sedang</td><td>Tinggi</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>11</td><td>Cerah</td><td>Sedang</td><td>Normal</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>8</td><td>Cerah</td><td>Sedang</td><td>Tinggi</td><td>Lemah</td><td>Tidak</td></tr>
+                <tr><td>13</td><td>Berawan</td><td>Panas</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>6</td><td>Hujan</td><td>Dingin</td><td>Normal</td><td>Kuat</td><td>Tidak</td></tr>
+                <tr><td>10</td><td>Hujan</td><td>Sedang</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Bootstrap Sample 3</h3>
+        <table class="excel-table">
+            <thead>
+                <tr><th>ID</th><th>Cuaca</th><th>Suhu</th><th>Kelembaban</th><th>Angin</th><th>Bermain Tenis</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>5</td><td>Hujan</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>9</td><td>Cerah</td><td>Dingin</td><td>Normal</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>12</td><td>Berawan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>1</td><td>Cerah</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Tidak</td></tr>
+                <tr><td>3</td><td>Berawan</td><td>Panas</td><td>Tinggi</td><td>Lemah</td><td>Ya</td></tr>
+                <tr><td>11</td><td>Cerah</td><td>Sedang</td><td>Normal</td><td>Kuat</td><td>Ya</td></tr>
+                <tr><td>14</td><td>Hujan</td><td>Sedang</td><td>Tinggi</td><td>Kuat</td><td>Tidak</td></tr>
+            </tbody>
+        </table>
+
+        <h2>3. Perhitungan Information Gain untuk setiap Decision Tree</h2>
+        
+        <div class="step">
+            <strong>Langkah 2:</strong> Hitung Entropy dan Information Gain untuk setiap fitur di setiap bootstrap sample
+        </div>
+
+        <div class="formula-box">
+            <strong>Formula Entropy:</strong><br>
+            Entropy(S) = -Σ(pi * log2(pi))<br><br>
+            <strong>Formula Information Gain:</strong><br>
+            IG(S,A) = Entropy(S) - Σ((|Sv|/|S|) * Entropy(Sv))
+        </div>
+
+        <h3>Decision Tree 1 (dari Bootstrap Sample 1)</h3>
+        <div class="highlight">
+            <strong>Distribusi Target Class:</strong> Ya = 5, Tidak = 2<br>
+            <strong>Entropy Root:</strong> -(5/7)*log2(5/7) - (2/7)*log2(2/7) = 0.863
+        </div>
+
+        <table class="excel-table">
+            <thead>
+                <tr><th>Fitur</th><th>Information Gain</th><th>Perhitungan Detail</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cuaca</td>
+                    <td>0.694</td>
+                    <td>
+                        Cerah: E=0.811 (Ya=1,Tidak=1)<br>
+                        Berawan: E=0 (Ya=3,Tidak=0)<br>
+                        Hujan: E=0.811 (Ya=1,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Suhu</td>
+                    <td>0.321</td>
+                    <td>
+                        Panas: E=0.811 (Ya=1,Tidak=1)<br>
+                        Sedang: E=0 (Ya=1,Tidak=0)<br>
+                        Dingin: E=0 (Ya=2,Tidak=0)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kelembaban</td>
+                    <td>0.152</td>
+                    <td>
+                        Tinggi: E=0.863 (Ya=2,Tidak=1)<br>
+                        Normal: E=0.811 (Ya=3,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Angin</td>
+                    <td>0.048</td>
+                    <td>
+                        Lemah: E=0.811 (Ya=3,Tidak=1)<br>
+                        Kuat: E=0.918 (Ya=2,Tidak=1)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tree-result">
+            <strong>Decision Tree 1 - Root Split:</strong> Cuaca (IG tertinggi = 0.694)<br>
+            <strong>Prediksi untuk test case (Cerah, Sedang, Normal, Lemah):</strong> Ya
+        </div>
+
+        <h3>Decision Tree 2 (dari Bootstrap Sample 2)</h3>
+        <div class="highlight">
+            <strong>Distribusi Target Class:</strong> Ya = 4, Tidak = 3<br>
+            <strong>Entropy Root:</strong> -(4/7)*log2(4/7) - (3/7)*log2(3/7) = 0.985
+        </div>
+
+        <table class="excel-table">
+            <thead>
+                <tr><th>Fitur</th><th>Information Gain</th><th>Perhitungan Detail</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cuaca</td>
+                    <td>0.234</td>
+                    <td>
+                        Cerah: E=0.918 (Ya=1,Tidak=2)<br>
+                        Berawan: E=0 (Ya=1,Tidak=0)<br>
+                        Hujan: E=0.918 (Ya=2,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kelembaban</td>
+                    <td>0.592</td>
+                    <td>
+                        Tinggi: E=0.918 (Ya=1,Tidak=2)<br>
+                        Normal: E=0.811 (Ya=3,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Suhu</td>
+                    <td>0.128</td>
+                    <td>
+                        Panas: E=0.918 (Ya=1,Tidak=1)<br>
+                        Sedang: E=0.918 (Ya=2,Tidak=1)<br>
+                        Dingin: E=0 (Ya=0,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Angin</td>
+                    <td>0.321</td>
+                    <td>
+                        Lemah: E=0.811 (Ya=3,Tidak=1)<br>
+                        Kuat: E=0.918 (Ya=1,Tidak=2)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tree-result">
+            <strong>Decision Tree 2 - Root Split:</strong> Kelembaban (IG tertinggi = 0.592)<br>
+            <strong>Prediksi untuk test case (Cerah, Sedang, Normal, Lemah):</strong> Ya
+        </div>
+
+        <h3>Decision Tree 3 (dari Bootstrap Sample 3)</h3>
+        <div class="highlight">
+            <strong>Distribusi Target Class:</strong> Ya = 5, Tidak = 2<br>
+            <strong>Entropy Root:</strong> -(5/7)*log2(5/7) - (2/7)*log2(2/7) = 0.863
+        </div>
+
+        <table class="excel-table">
+            <thead>
+                <tr><th>Fitur</th><th>Information Gain</th><th>Perhitungan Detail</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Suhu</td>
+                    <td>0.451</td>
+                    <td>
+                        Panas: E=0.811 (Ya=1,Tidak=1)<br>
+                        Sedang: E=0.811 (Ya=1,Tidak=1)<br>
+                        Dingin: E=0 (Ya=1,Tidak=0)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Cuaca</td>
+                    <td>0.234</td>
+                    <td>
+                        Cerah: E=0.918 (Ya=1,Tidak=2)<br>
+                        Berawan: E=0 (Ya=2,Tidak=0)<br>
+                        Hujan: E=0.918 (Ya=2,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kelembaban</td>
+                    <td>0.152</td>
+                    <td>
+                        Tinggi: E=0.863 (Ya=2,Tidak=1)<br>
+                        Normal: E=0.811 (Ya=3,Tidak=1)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Angin</td>
+                    <td>0.048</td>
+                    <td>
+                        Lemah: E=0.811 (Ya=3,Tidak=1)<br>
+                        Kuat: E=0.918 (Ya=2,Tidak=1)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tree-result">
+            <strong>Decision Tree 3 - Root Split:</strong> Suhu (IG tertinggi = 0.451)<br>
+            <strong>Prediksi untuk test case (Cerah, Sedang, Normal, Lemah):</strong> Tidak
+        </div>
+
+        <h2>4. Voting dan Prediksi Final</h2>
+        
+        <div class="step">
+            <strong>Langkah 3:</strong> Lakukan voting mayoritas dari prediksi semua decision trees
+        </div>
+
+        <table class="excel-table">
+            <thead>
+                <tr><th>Test Case</th><th>Tree 1</th><th>Tree 2</th><th>Tree 3</th><th>Vote Ya</th><th>Vote Tidak</th><th>Prediksi Final</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cerah, Sedang, Normal, Lemah</td>
+                    <td>Ya</td>
+                    <td>Ya</td>
+                    <td>Tidak</td>
+                    <td>2</td>
+                    <td>1</td>
+                    <td><strong>Ya</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="formula-box">
+            <strong>Formula Voting:</strong><br>
+            Prediksi Final = argmax(Σ votes untuk setiap class)<br><br>
+            <strong>Dalam Excel:</strong><br>
+            =IF(COUNTIF(range_prediksi,"Ya") > COUNTIF(range_prediksi,"Tidak"), "Ya", "Tidak")
+        </div>
+
+        <div class="final-result">
+            🎯 <strong>HASIL AKHIR RANDOM FOREST:</strong><br>
+            Untuk kondisi cuaca: Cerah, Suhu: Sedang, Kelembaban: Normal, Angin: Lemah<br>
+            <strong>PREDIKSI: BERMAIN TENIS = YA</strong><br>
+            (Berdasarkan voting mayoritas: 2 Ya vs 1 Tidak)
+        </div>
+
+        <h2>5. Formula Excel untuk Implementasi</h2>
+        <div class="formula-box">
+            <strong>A. Bootstrap Sampling:</strong><br>
+            =INDEX(dataset, RANDBETWEEN(1, ROWS(dataset)), COLUMN())<br><br>
+            
+            <strong>B. Entropy Calculation:</strong><br>
+            =-(P1*LOG(P1,2)+P2*LOG(P2,2))<br>
+            dimana P1 = COUNTIF(range,"Ya")/COUNT(range)<br><br>
+            
+            <strong>C. Information Gain:</strong><br>
+            =Entropy_Parent - SUMPRODUCT(Weight_array, Entropy_children_array)<br><br>
+            
+            <strong>D. Majority Voting:</strong><br>
+            =IF(COUNTIF(tree_predictions,"Ya") > COUNTIF(tree_predictions,"Tidak"), "Ya", "Tidak")
+        </div>
+
+        <div class="highlight">
+            <strong>💡 Tips Implementasi di Excel:</strong><br>
+            • Gunakan fungsi RANDBETWEEN() untuk bootstrap sampling<br>
+            • Buat helper columns untuk menghitung proporsi setiap class<br>
+            • Gunakan COUNTIFS() untuk menghitung kondisi kombinasi<br>
+            • Implementasikan decision tree dengan nested IF statements<br>
+            • Simpan prediksi setiap tree dalam kolom terpisah untuk voting
+        </div>
+    </div>
+</body>
+</html>
